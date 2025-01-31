@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import threading
+import multiprocessing
+import sys
 import typing as T
 
 from llm.output_model import Command
@@ -29,11 +31,35 @@ class SimulatorOrchestrator:
         """
         for simulator in self._config.simulators:
             if simulator.name not in self._simulator_threads:
-                thread = threading.Thread(
-                    target=self._run_simulator_loop, args=(simulator,), daemon=True
-                )
-                self._simulator_threads[simulator.name] = thread
-                thread.start()
+                # thread = threading.Thread(
+                #     target=self._run_simulator_loop, args=(simulator,), daemon=True
+                # )
+                # self._simulator_threads[simulator.name] = thread
+                # thread.start()
+
+
+                if sys.platform.startswith("linux"):
+                    logging.debug("Running RacoonSim in main thread (Linux fix).")
+
+                    simulator.tick()  # Run RacoonSim in the main thread
+
+                    # process = multiprocessing.Process(target=self._run_simulator_loop, args=(simulator,))
+                    # self._simulator_threads[simulator.name] = process
+                    # process.start()
+
+                    # process_thread = ProcessThread(target=self._run_simulator_loop, args=(simulator,))
+                    # process_thread.start()
+                    # self._simulator_threads[simulator.name] = process_thread
+
+
+                else:
+                    logging.debug("Running RacoonSim in a thread (Mac & Windows).")
+                    thread = threading.Thread(
+                        target=self._run_simulator_loop, args=(simulator,), daemon=True
+                    )
+                    self._simulator_threads[simulator.name] = thread
+                    thread.start()
+
         return asyncio.Future()  # Return future for compatibility
 
     def _run_simulator_loop(self, simulator: Simulator):
@@ -74,3 +100,34 @@ class SimulatorOrchestrator:
         logging.debug(f"Calling simulator {simulator.name} with commands {commands}")
         simulator.sim(commands)
         return None
+
+
+
+class ProcessThread:
+    """ A wrapper to make multiprocessing.Process behave like a Thread """
+    
+    def __init__(self, target, args=()):
+        self.process = multiprocessing.Process(target=target, args=args)
+
+    def start(self):
+        """ Starts the process (like Thread) and ensures cleanup on failure. """
+        try:
+            self.process.start()
+        except Exception as e:
+            logging.error(f"Failed to start process: {e}")
+            self.terminate()  # Ensure cleanup
+
+    def join(self, timeout=None):
+        """ Joins the process (like Thread) """
+        self.process.join(timeout)
+
+    def is_alive(self):
+        """ Checks if process is alive (like Thread) """
+        return self.process.is_alive()
+
+    def terminate(self):
+        """ Terminates the process (not available in Thread) """
+        if self.process.is_alive():
+            logging.debug("Terminating process...")
+            self.process.terminate()
+            self.process.join()
