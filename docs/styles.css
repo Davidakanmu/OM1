@@ -11,9 +11,10 @@
 .hero-header {
     font-size: 48px;
     font-weight: 600;
-    color: #fff;
+    color: #E83362;
     text-align: center;
     line-height: -1.2;
+    
 }
 
 .hero-p {
@@ -24,7 +25,6 @@
 .hero-cards {
     margin: 2em auto 2em;
     width: 60%;
-    text-align: center;
 }
 
 .hero-cards {

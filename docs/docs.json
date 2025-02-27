@@ -3,17 +3,16 @@
   "name": "OpenMind",
   "favicon": "/assets/favicon.png",
   "colors": {
-    "primary": "#FD015F",
-    "light": "#E10054",
-    "dark": "#FD015F"
+    "primary": "#E83362",
+    "light": "#E53935",
+    "dark": "#E63946"
   },
   "styling": {
     "codeblocks": "system"
   },
   "background": {
     "decoration": "grid"
-  },
-  "navigation": {
+  },  "navigation": {
     "tabs": [
       {
         "tab": "Home",
@@ -32,17 +31,17 @@
             ]
           },
           {
+            "group": "Configuration",
+            "pages": [
+              "configuration/configuration"
+            ]
+          },
+          {
             "group": "Core Features",
             "pages": [
               "core-features/conversation",
               "core-features/llm_models",
               "core-features/smart_toy"
-            ]
-          },
-          {
-            "group": "Configuration",
-            "pages": [
-              "configuration/configuration"
             ]
           },
           {
